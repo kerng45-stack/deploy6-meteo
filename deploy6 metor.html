@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8">
+    <title>อุตุนิยมวิทยาและภัยพิบัติ — ศูนย์บัญชาการ AI+ML</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --c-green: #1b4d31; --c-teal: #0e4242; --c-navy: #1e2d56; --c-navy-2: #182849; --c-purple: #3a1c5e; --c-purple-2: #2c1452;
+            --size-big: clamp(34px, 4.6vw, 56px);
+            --size-big-thai: clamp(32px, 4.2vw, 50px);
+            --size-stat: clamp(16px, 1.6vw, 21px);
+        }
+        body.big-xxs { --size-big: clamp(16px, 2.2vw, 28px); --size-big-thai: clamp(15px, 2vw, 26px); }
+        body.big-sm  { --size-big: clamp(24px, 3.2vw, 38px); --size-big-thai: clamp(22px, 3vw, 34px); }
+        body.big-lg  { --size-big: clamp(42px, 5.6vw, 70px); --size-big-thai: clamp(40px, 5.2vw, 64px); }
+        body.big-xl  { --size-big: clamp(50px, 6.8vw, 88px); --size-big-thai: clamp(48px, 6.2vw, 80px); }
+        body.stat-sm { --size-stat: clamp(13px, 1.25vw, 17px); }
+        body.stat-lg { --size-stat: clamp(20px, 2vw, 26px); }
+        body.stat-xl { --size-stat: clamp(24px, 2.5vw, 32px); }
+        body.stat-xxl{ --size-stat: clamp(30px, 3vw, 42px); }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+        body {
+            font-family: 'Sarabun', 'Segoe UI', Tahoma, sans-serif;
+            background: #000;
+            color: #fff;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .header {
+            background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 10px;
+            padding: 7px 14px; display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 8px; flex-shrink: 0;
+        }
+        .header .title { color: #d4af37; font-weight: 800; font-size: clamp(14px, 1.4vw, 17px); }
+        .header .meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+        .update-time { color: #5fd084; font-size: 12px; font-weight: 700; }
+        .links { display:flex; gap:5px; flex-wrap:wrap; }
+        .links a { font-size: 11px; font-weight: 700; text-decoration: none; padding: 4px 10px; border-radius: 6px; white-space: nowrap; }
+        .btn-tmd { color:#5fd084; border:1px solid #1e5a30; background:#08130c; }
+        .btn-aqi { color:#f0913a; border:1px solid #5a2e10; background:#1a0a04; }
+        .btn-usgs { color:#b27cd0; border:1px solid #3e1a5e; background:#0e0418; }
+        .btn-gdacs{ color:#ed6356; border:1px solid #4a1414; background:#150404; }
+        .control-bar {
+            background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 8px;
+            padding: 7px 14px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; flex-shrink: 0;
+        }
+        .control-bar label { color: #d4af37; font-size: 13px; font-weight: 700; white-space: nowrap; }
+        .control-bar select {
+            background: #141414; color: #d4af37; border: 1px solid #2a2a2a;
+            border-radius: 6px; padding: 6px 11px; font-size: 13px; font-weight: 700;
+            min-width: 150px; font-family: inherit;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            flex: 1;
+            min-height: 0;
+        }
+        @media (max-width:1100px) { .dashboard-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width:700px) { .dashboard-grid { grid-template-columns: 1fr; } }
+        .card {
+            border-radius: 14px; padding: 6px 14px 10px; display: flex; flex-direction: column; min-height: 0; overflow: hidden; position: relative;
+        }
+        .card-c1 { background: var(--c-green); } .card-c2 { background: var(--c-teal); } .card-c3 { background: var(--c-navy); }
+        .card-c4 { background: var(--c-purple); } .card-c5 { background: var(--c-navy-2); } .card-c6 { background: var(--c-purple-2); }
+        .card-title {
+            font-size: clamp(13px, 1.2vw, 15px); font-weight: 700; display: flex; gap: 7px; align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.13); padding-bottom: 4px; margin-bottom: 6px;
+        }
+        .badge { background: rgba(0,0,0,0.4); padding: 2px 10px; border-radius: 11px; font-size: 11px; margin-left: auto; }
+        .weather-main-temp { font-size: var(--size-big); font-weight: 800; }
+        .weather-feels { font-size: 1rem; opacity: 0.8; margin-left: 12px; }
+        .weather-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; flex:1; }
+        .weather-detail-item { display: flex; flex-direction: column; }
+        .weather-detail-label { font-size: 12px; opacity: 0.7; }
+        .weather-detail-value { font-size: 1.1rem; font-weight: 700; }
+        .v-good { color: #6fe09a !important; } .v-warn { color: #ffaa55 !important; } .v-bad { color: #ff7766 !important; } .v-info { color: #7dd3e8 !important; } .v-orange { color: #ffaa55 !important; }
+        .mini-links { display: flex; gap: 6px; margin-top: 10px; }
+        .mini-links a { flex:1; text-align: center; font-size: 11px; padding: 6px; background: rgba(0,0,0,0.3); border-radius: 7px; text-decoration: none; color: rgba(255,255,255,0.85); }
+        .loading { text-align: center; opacity: 0.6; padding: 15px; }
+        .notification { position: fixed; bottom: 20px; right: 20px; background: #0e1a14; border: 1px solid #d4af37; color: #d4af37; padding: 8px 16px; border-radius: 8px; z-index: 999; animation: slideIn 0.3s; }
+        @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .card-body {
+            flex: 1; min-height: 0; display: flex; flex-direction: column;
+            overflow: hidden;   /* ← ป้องกันเนื้อหาล้นการ์ด */
+            position: relative; z-index: 1;
+        }
+        .big-value { font-family: 'Inter','Sarabun',sans-serif; font-size: var(--size-big); font-weight: 800; line-height: 1; color: #fff; margin: 0 0 1px 0; display: block; }
+        .big-value-thai { font-family: 'Sarabun',sans-serif; font-size: var(--size-big-thai); font-weight: 800; line-height: 1.25; }
+        .big-label { font-size: clamp(12px,1.05vw,14px); font-weight: 600; opacity: 0.78; line-height: 1.5; word-break: break-word; }
+        .big-sub { font-size: clamp(11.5px,1vw,13px); opacity: 0.72; line-height: 1.5; margin-top: 4px; word-break: break-word; }
+        .big-sub strong { color: #fff; opacity: 1; font-weight: 700; }
+        .big-value.fc-today { font-size: calc(var(--size-big) * 0.72); margin: 4px 0 6px 0; }
+
+        .stat-row { display: flex; gap: 12px; margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.13); flex-shrink: 0; }
+        .stat-row .stat { flex: 1; min-width: 0; text-align: left; }
+        .stat-row .stat-num { font-family: 'Inter','Sarabun',sans-serif; font-size: var(--size-stat); font-weight: 800; line-height: 1.1; white-space: nowrap; }
+        .stat-row .stat-lbl { font-size: 10.5px; opacity: 0.72; margin-top: 4px; line-height: 1.3; word-break: break-word; }
+
+        .aqi-prov-grid {
+            display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(2,minmax(48px,auto));
+            gap: 5px; flex: 1; min-height: 100px; margin-top: 4px;
+            overflow: hidden;   /* ← เพิ่ม */
+        }
+        .aqi-main-section { display: flex; flex-direction: column; flex-shrink: 0; min-height: 0; overflow: hidden; }
+
+        .eq-featured { display: block; text-decoration: none; color: inherit; background: rgba(0,0,0,0.32); border-radius: 9px; padding: 8px 10px; margin: 6px 0 8px 0; border: 1px solid rgba(255,255,255,0.08); transition: 0.15s; }
+        .eq-featured:hover { background: rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.2); }
+        .eq-featured-meta { font-size: 11px; color: #d4af37; line-height: 1.4; margin-top: 3px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .eq-featured-meta .eq-dist { color: #ff9944; font-weight: 700; }
+        .eq-featured-meta .eq-depth { color: #aaa; }
+        .eq-list {
+            display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;
+            flex: 1; min-height: 0;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+        .eq-list::-webkit-scrollbar { display: none; }
+        .eq-row { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.28); border-radius: 7px; padding: 5px 8px; text-decoration: none; color: inherit; transition: 0.15s; border: 1px solid transparent; }
+        .eq-row:hover { background: rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.15); transform: translateX(2px); }
+        .eq-row-mag { color: #000; font-weight: 800; padding: 2px 8px; border-radius: 5px; font-size: calc(var(--size-stat) * 0.6); min-width: 48px; text-align: center; font-family: 'Inter',sans-serif; flex-shrink: 0; line-height: 1.3; }
+        .eq-row-place { flex: 1; min-width: 0; font-size: 11px; color: #f0e0d0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+        .eq-row-meta { font-size: 10px; color: #d4af37; flex-shrink: 0; white-space: nowrap; text-align: right; }
+        .eq-row-meta .eq-row-dist { color: #ff9944; font-weight: 700; display: block; }
+        .eq-row-meta .eq-row-time { opacity: 0.85; }
+
+        .fc7-strip {
+            display: grid; grid-template-columns: repeat(7,1fr); gap: 5px; margin-top: 8px;
+            flex: 1; min-height: 0;
+            overflow: hidden;   /* ← เพิ่ม */
+        }
+        .fc7-cell { background: rgba(0,0,0,0.32); border: 1px solid rgba(255,255,255,0.08); border-radius: 9px; padding: 8px 3px; display: flex; flex-direction: column; align-items: center; justify-content: space-around; gap: 3px; overflow: hidden; min-width: 0; }
+        .fc7-cell.today { background: rgba(255,255,255,0.14); border: 1.5px solid rgba(255,255,255,0.28); }
+        .fc7-d { font-size: clamp(11px,0.95vw,13px); font-weight: 700; opacity: 0.92; line-height: 1.3; }
+        .fc7-i { font-size: clamp(20px,2.2vw,28px); line-height: 1; }
+        .fc7-temps { display: flex; flex-direction: column; align-items: center; line-height: 1; }
+        .fc7-t-max { font-family: 'Inter',sans-serif; font-size: calc(var(--size-stat) * 0.82); font-weight: 800; line-height: 1.1; }
+        .fc7-t-min { font-family: 'Inter',sans-serif; font-size: calc(var(--size-stat) * 0.66); font-weight: 700; line-height: 1.1; opacity: 0.55; }
+        .fc7-r { font-size: clamp(10px,0.95vw,12px); font-weight: 700; line-height: 1.1; white-space: nowrap; }
+        .v-mid { color: #ffd966 !important; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="title">⛈️ อุตุนิยมวิทยา ภัยพิบัติ และสิ่งแวดล้อม</div>
+    <div class="meta">
+        <span class="update-time" id="wdLastUpdate">กำลังโหลด...</span>
+        <span id="coordDisplay" style="color:#888;font-size:11px;font-weight:600;font-family:'Inter',monospace;">--</span>
+        <div class="links">
+            <a href="https://www.tmd.go.th/warning.php" target="_blank" class="btn-tmd">⚠️ กรมอุตุฯ</a>
+            <a href="https://aqicn.org/map/thailand/" target="_blank" class="btn-aqi">🌫️ AQI</a>
+            <a href="https://earthquake.usgs.gov/earthquakes/map/?extent=0,95&extent=25,115" target="_blank" class="btn-usgs">🌍 USGS</a>
+            <a href="https://www.gdacs.org" target="_blank" class="btn-gdacs">🆘 GDACS</a>
+        </div>
+    </div>
+</div>
+
+<div class="control-bar">
+    <label>📍 จังหวัด</label>
+    <select id="provinceSelect"></select>
+    <label>🏙️ อำเภอ/เขต</label>
+    <select id="districtSelect"></select>
+    <label>🏘️ ตำบล/แขวง</label>
+    <select id="tambonSelect"></select>
+    <select id="sizeBigSel">
+        <option value="xxs">เล็กมาก</option><option value="sm">เล็ก</option><option value="md" selected>กลาง</option><option value="lg">ใหญ่</option><option value="xl">ใหญ่มาก</option>
+    </select>
+    <select id="sizeStatSel">
+        <option value="sm">เล็ก</option><option value="md" selected>กลาง</option><option value="lg">ใหญ่</option><option value="xl">ใหญ่มาก</option><option value="xxl">ยักษ์</option>
+    </select>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card card-c1"><div class="card-title"><span id="weatherIconLabel">☀️ สภาพอากาศ</span><span class="badge" id="riskBadge">⏳</span></div><div class="card-body" id="weatherBody"><div class="loading">⏳ กำลังโหลด...</div></div></div>
+    <div class="card card-c2"><div class="card-title">🌫️ คุณภาพอากาศ (AQI)</div><div class="card-body" id="aqiContainer"><div class="loading">⏳ กำลังโหลด...</div></div></div>
+    <div class="card card-c3"><div class="card-title">📅 พยากรณ์ 7 วัน — <span id="fcLocation">กรุงเทพฯ</span></div><div class="card-body" id="fc7Container"><div class="loading">⏳ กำลังโหลด...</div></div></div>
+    <div class="card card-c4"><div class="card-title">🌀 พายุ / เตือนภัย — <span id="stormLocation">กรุงเทพฯ</span></div><div class="card-body" id="stormContainer"><div class="loading">⏳ กำลังโหลด...</div></div></div>
+    <div class="card card-c5"><div class="card-title">🚦 จราจร / อุบัติเหตุ — <span id="trafficLocation">กรุงเทพฯ</span></div><div class="card-body" id="trafficContainer"><div class="loading">⏳ กำลังโหลด...</div></div></div>
+    <div class="card card-c6"><div class="card-title">🆘 แผ่นดินไหว / ภัยพิบัติ</div><div class="card-body" id="disasterContainer"><div class="loading">⏳ กำลังโหลด...</div></div></div>
+</div>
+
+<script>
+// ==================== THAI GEO FALLBACK (77 จังหวัด) ====================
+let thaiGeo = {
+    "กรุงเทพมหานคร":{center:[13.7563,100.5018],districts:[{name:"เขตบางกอกน้อย",lat:13.763,lon:100.477,tambons:[{name:"พื้นที่ส่วนกลาง",lat:13.763,lon:100.477}]},{name:"เขตพระนคร",lat:13.752,lon:100.498,tambons:[{name:"พื้นที่ส่วนกลาง",lat:13.752,lon:100.498}]}]},
+    "กระบี่":{center:[8.0619,98.9208],districts:[{name:"อำเภอเมืองกระบี่",lat:8.0619,lon:98.9208,tambons:[{name:"พื้นที่ส่วนกลาง",lat:8.0619,lon:98.9208}]}]},
+    "กาญจนบุรี":{center:[14.0202,99.5306],districts:[{name:"อำเภอเมืองกาญจนบุรี",lat:14.0202,lon:99.5306,tambons:[{name:"พื้นที่ส่วนกลาง",lat:14.0202,lon:99.5306}]}]}
+    // (ในไฟล์จริงจะมี 77 จังหวัดเต็มจาก PROV_CENTERS ด้านล่าง)
+};
+const PROV_CENTERS = {
+    "กรุงเทพมหานคร":[13.7563,100.5018],"กระบี่":[8.0619,98.9208],"กาญจนบุรี":[14.0202,99.5306],"กาฬสินธุ์":[16.4328,103.5067],"กำแพงเพชร":[16.4792,99.5292],
+    "ขอนแก่น":[16.4311,102.8222],"จันทบุรี":[12.6081,102.1053],"ฉะเชิงเทรา":[13.6919,101.0683],"ชลบุรี":[13.3606,100.9833],"ชัยนาท":[15.1236,100.1514],
+    "ชัยภูมิ":[15.8067,102.0311],"ชุมพร":[10.5028,99.1819],"เชียงราย":[19.9072,99.8325],"เชียงใหม่":[18.7883,98.9858],"ตรัง":[7.5561,99.6119],
+    "ตราด":[12.2419,102.5186],"ตาก":[16.8769,99.1286],"นครนายก":[14.2019,101.2167],"นครปฐม":[13.8197,100.0442],"นครพนม":[17.4086,104.7764],
+    "นครราชสีมา":[14.9742,102.0997],"นครศรีธรรมราช":[8.4364,99.9628],"นครสวรรค์":[15.7019,100.1181],"นนทบุรี":[13.8622,100.5139],"นราธิวาส":[6.4278,101.8242],
+    "น่าน":[18.7753,100.7733],"บึงกาฬ":[18.3603,103.6567],"บุรีรัมย์":[14.9944,103.1028],"ปทุมธานี":[14.0131,100.5319],"ประจวบคีรีขันธ์":[11.8119,99.7981],
+    "ปราจีนบุรี":[14.0503,101.3719],"ปัตตานี":[6.8681,101.2536],"พระนครศรีอยุธยา":[14.353,100.568],"พะเยา":[19.1667,99.9019],"พังงา":[8.4564,98.5292],
+    "พัทลุง":[7.6167,100.0742],"พิจิตร":[16.4392,100.3511],"พิษณุโลก":[16.8269,100.2606],"เพชรบุรี":[13.1119,99.9431],"เพชรบูรณ์":[16.4158,101.1578],
+    "แพร่":[18.1436,100.1408],"ภูเก็ต":[7.8803,98.3931],"มหาสารคาม":[16.1858,103.3006],"มุกดาหาร":[16.5417,104.7219],"แม่ฮ่องสอน":[19.2847,97.9694],
+    "ยโสธร":[15.7939,104.1469],"ยะลา":[6.5425,101.2836],"ร้อยเอ็ด":[16.0528,103.6514],"ระนอง":[9.9631,98.6381],"ระยอง":[12.675,101.2719],
+    "ราชบุรี":[13.5358,99.8139],"ลพบุรี":[14.8008,100.6497],"ลำปาง":[18.2914,99.4903],"ลำพูน":[18.5781,99.0089],"เลย":[17.4908,101.7225],
+    "ศรีสะเกษ":[15.1125,104.3244],"สกลนคร":[17.1561,104.1442],"สงขลา":[7.1892,100.5969],"สตูล":[6.6222,100.0681],"สมุทรปราการ":[13.6036,100.5961],
+    "สมุทรสงคราม":[13.4089,100.0033],"สมุทรสาคร":[13.545,100.2739],"สระแก้ว":[13.8167,102.0722],"สระบุรี":[14.5314,100.9125],"สิงห์บุรี":[14.8875,100.4042],
+    "สุโขทัย":[17.0067,99.8236],"สุพรรณบุรี":[14.4758,100.1189],"สุราษฎร์ธานี":[9.1364,99.3275],"สุรินทร์":[14.8803,103.4956],"หนองคาย":[17.8775,102.7436],
+    "หนองบัวลำภู":[17.2039,102.4328],"อ่างทอง":[14.5861,100.4606],"อำนาจเจริญ":[15.8686,104.6283],"อุดรธานี":[17.4108,102.7861],"อุตรดิตถ์":[17.6228,100.0967],
+    "อุทัยธานี":[15.3833,100.0283],"อุบลราชธานี":[15.225,104.8575]
+};
+(function(){
+    Object.keys(PROV_CENTERS).forEach(prov => {
+        const [la, lo] = PROV_CENTERS[prov];
+        if (!thaiGeo[prov]) {
+            thaiGeo[prov] = {
+                center: [la, lo],
+                districts: [{ name: "เมือง", lat: la, lon: lo, tambons: [{name:"ศูนย์กลาง",lat:la,lon:lo}] }]
+            };
+        } else {
+            thaiGeo[prov].districts.forEach(d => {
+                if (!d.tambons || d.tambons.length === 0) {
+                    d.tambons = [{ name: "ศูนย์กลาง", lat: d.lat, lon: d.lon }];
+                }
+            });
+        }
+    });
+})();
+
+let currentProvince = 'กรุงเทพมหานคร';
+let currentDistrict = 'เขตบางกอกน้อย';
+let currentTambon = 'พื้นที่ส่วนกลาง';
+let centerLat = 13.763;
+let centerLon = 100.477;
+let weatherData = null;
+
+// ==================== CSV PARSER & CDN LOADER ====================
+const THAI_GEO_CSV_URL = 'https://cdn.jsdelivr.net/gh/spicydog/thailand-province-district-subdistrict-zipcode-latitude-longitude@master/output.csv';
+function parseThaiGeoCSV(text) {
+    const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+    const startIdx = (lines[0] && /province|latitude|longitude/i.test(lines[0])) ? 1 : 0;
+    const geo = {};
+    const distAggr = {};
+    for (let i = startIdx; i < lines.length; i++) {
+        const cols = lines[i].split(',');
+        if (cols.length < 6) continue;
+        const prov = cols[0].trim();
+        const dist = cols[1].trim();
+        const tamb = cols[2].trim();
+        const la = parseFloat(cols[4]);
+        const lo = parseFloat(cols[5]);
+        if (!prov || !dist || !tamb) continue;
+        if (isNaN(la) || isNaN(lo) || la === 0 || lo === 0) continue;
+        if (!geo[prov]) geo[prov] = { center: [0,0], _provSum:[0,0,0], districts: [], _distIdx: {} };
+        let dIdx = geo[prov]._distIdx[dist];
+        if (dIdx === undefined) {
+            dIdx = geo[prov].districts.length;
+            geo[prov].districts.push({ name: dist, lat: 0, lon: 0, tambons: [] });
+            geo[prov]._distIdx[dist] = dIdx;
+            distAggr[prov+'||'+dist] = { sumLat:0, sumLon:0, count:0 };
+        }
+        geo[prov].districts[dIdx].tambons.push({ name: tamb, lat: la, lon: lo });
+        const a = distAggr[prov+'||'+dist]; a.sumLat += la; a.sumLon += lo; a.count++;
+        geo[prov]._provSum[0] += la; geo[prov]._provSum[1] += lo; geo[prov]._provSum[2]++;
+    }
+    for (const provName in geo) {
+        const p = geo[provName];
+        for (const d of p.districts) {
+            const a = distAggr[provName+'||'+d.name];
+            if (a && a.count > 0) { d.lat = a.sumLat/a.count; d.lon = a.sumLon/a.count; }
+        }
+        if (p._provSum[2] > 0) p.center = [p._provSum[0]/p._provSum[2], p._provSum[1]/p._provSum[2]];
+        p.districts.sort((a,b) => a.name.localeCompare(b.name, 'th'));
+        for (const d of p.districts) d.tambons.sort((a,b) => a.name.localeCompare(b.name, 'th'));
+        delete p._provSum; delete p._distIdx;
+    }
+    return geo;
+}
+
+async function loadThaiGeoFromCDN() {
+    try {
+        const resp = await fetch(THAI_GEO_CSV_URL, { cache: 'force-cache' });
+        if (!resp.ok) return false;
+        const text = await resp.text();
+        if (text.length < 10000) return false;
+        const newGeo = parseThaiGeoCSV(text);
+        if (Object.keys(newGeo).length >= 70) {
+            thaiGeo = newGeo;
+            return true;
+        }
+    } catch(e) { console.warn('CDN load failed', e); }
+    return false;
+}
+
+// ==================== HELPERS ====================
+function showNotification(msg) { const el=document.createElement('div'); el.className='notification'; el.textContent=msg; document.body.appendChild(el); setTimeout(()=>el.remove(),3500); }
+function getWeatherCondition(code) { const m={0:{emoji:'☀️',t:'แจ่มใส'},1:{emoji:'🌤️',t:'แดดส่วนใหญ่'},2:{emoji:'⛅',t:'มีเมฆบางส่วน'},3:{emoji:'☁️',t:'เมฆมาก'},45:{emoji:'🌫️',t:'หมอก'},51:{emoji:'🌦️',t:'ฝนปรอย'},61:{emoji:'🌧️',t:'ฝนตก'},80:{emoji:'⛈️',t:'ฝนซู่'},95:{emoji:'⛈️',t:'พายุฝน'}}; return m[code]||{emoji:'❓',t:'ไม่ทราบ'}; }
+function distKm(la1,lo1,la2,lo2) { const R=6371,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180,a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
+function fmtTimeAgo(ms) { const now=Date.now(),diff=Math.round((now-ms)/60000); if(diff<60) return diff+' นาทีที่แล้ว'; if(diff<1440) return Math.round(diff/60)+' ชม.ที่แล้ว'; return Math.round(diff/1440)+' วันที่แล้ว'; }
+function fmtDateThai(ms) { const d=new Date(ms); return d.toLocaleDateString('th-TH',{month:'short',day:'numeric'})+' '+d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}); }
+
+// ==================== FETCH WEATHER ====================
+async function fetchWeatherData(lat,lon) {
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,windspeed_10m,relativehumidity_2m,visibility,winddirection_10m,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode,precipitation_probability_max,windgusts_10m_max,windspeed_10m_max,uv_index_max,sunrise,sunset&timezone=Asia%2FBangkok&forecast_days=8`;
+    const r=await fetch(u); if(!r.ok) throw new Error(); weatherData=await r.json();
+}
+
+// ==================== RENDER WEATHER ====================
+function renderWeatherCard() {
+    if(!weatherData) return;
+    const w=weatherData;
+    const t=w.current?.temperature_2m?.toFixed(0)||'--';
+    const fe=w.current?.apparent_temperature?.toFixed(0)||'--';
+    const wi=w.current?.windspeed_10m?.toFixed(0)||'--';
+    const gu=w.daily?.windgusts_10m_max?.[0]?.toFixed(0)||'--';
+    const hu=w.current?.relativehumidity_2m??'--';
+    const rP=w.daily?.precipitation_probability_max?.[0]||0;
+    const rainAmount=w.daily?.precipitation_sum?.[0]||0;
+    const wc=w.current?.weathercode, wInfo=getWeatherCondition(wc);
+    const uv=w.daily?.uv_index_max?.[0]?.toFixed(0)??'--';
+    const sunrise=w.daily?.sunrise?.[0], sunset=w.daily?.sunset?.[0];
+    const srStr=sunrise? new Date(sunrise).toTimeString().slice(0,5) : '--:--';
+    const ssStr=sunset? new Date(sunset).toTimeString().slice(0,5) : '--:--';
+    const windDir=w.current?.winddirection_10m;
+    let windDirStr='';
+    if(windDir!==undefined){ const dirs=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW']; windDirStr=dirs[Math.round(windDir/22.5)%16]||''; }
+    let risk=0;
+    if(rainAmount>20) risk+=15; else if(rainAmount>10) risk+=8;
+    if(parseFloat(gu)>60) risk+=12; else if(parseFloat(gu)>40) risk+=6;
+    const rL=risk>=20?{t:'สูงมาก',c:'#ff7766'}:risk>=12?{t:'สูง',c:'#ffaa55'}:risk>=6?{t:'กลาง',c:'#ffd966'}:{t:'ต่ำ',c:'#6fe09a'};
+
+    document.getElementById('weatherIconLabel').innerHTML=`${wInfo.emoji} สภาพอากาศ`;
+    const badge=document.getElementById('riskBadge'); badge.textContent='⚠️ '+rL.t; badge.style.color=rL.c;
+    const loc = currentTambon ? currentTambon+' · '+currentDistrict : currentDistrict;
+    document.getElementById('weatherBody').innerHTML = `
+        <div style="margin-bottom:6px;">📍 ${loc}</div>
+        <div style="display:flex; align-items:flex-end;">
+            <span class="weather-main-temp v-orange">${t}°C</span>
+            <span class="weather-feels">รู้สึก ${fe}°</span>
+        </div>
+        <div class="weather-detail-grid">
+            <div class="weather-detail-item"><span class="weather-detail-label">💧 ความชื้น</span><span class="weather-detail-value v-info">${hu}%</span></div>
+            <div class="weather-detail-item"><span class="weather-detail-label">☔ ฝน</span><span class="weather-detail-value v-info">${rP}% / ${rainAmount} มม.</span></div>
+            <div class="weather-detail-item"><span class="weather-detail-label">💨 ลม / กระโชก</span><span class="weather-detail-value">${wi}/${gu} กม./ชม. ${windDirStr}</span></div>
+            <div class="weather-detail-item"><span class="weather-detail-label">☀️ UV Index</span><span class="weather-detail-value v-warn">${uv} (สูงมาก)</span></div>
+            <div class="weather-detail-item"><span class="weather-detail-label">🌅 ขึ้น / ตก</span><span class="weather-detail-value">${srStr} / ${ssStr}</span></div>
+        </div>
+        <div class="mini-links">
+            <a href="https://open-meteo.com/en/docs?latitude=${centerLat}&longitude=${centerLon}&timezone=Asia%2FBangkok" target="_blank">📊 Open-Meteo</a>
+            <a href="https://www.windy.com/?${centerLat},${centerLon},9" target="_blank">🌍 Windy</a>
+            <a href="https://www.tmd.go.th/weather/weatherthailand" target="_blank">🇹🇭 กรมอุตุฯ</a>
+        </div>`;
+}
+
+// ==================== STORM ====================
+async function loadStormData() {
+    const el=document.getElementById('stormContainer');
+    const loc = currentTambon ? currentTambon+' · '+currentDistrict : currentDistrict;
+    document.getElementById('stormLocation').textContent=loc;
+    try{
+        const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${centerLat}&longitude=${centerLon}&daily=precipitation_probability_max,windspeed_10m_max,windgusts_10m_max&timezone=Asia%2FBangkok&forecast_days=3`);
+        if(!r.ok) throw new Error();
+        const d=await r.json();
+        const maxW=Math.max(...(d.daily?.windgusts_10m_max||[0]));
+        const maxRP=Math.max(...(d.daily?.precipitation_probability_max||[0]));
+        const maxWS=Math.max(...(d.daily?.windspeed_10m_max||[0]));
+        const sr=maxW>60?{t:'สูง',cls:'v-bad'}:maxW>40?{t:'ปานกลาง',cls:'v-warn'}:{t:'ต่ำ',cls:'v-good'};
+        el.innerHTML=`
+            <div style="font-weight:700; margin-bottom:6px;">ความเสี่ยงพายุ 3 วันล่วงหน้า</div>
+            <div class="big-value big-value-thai ${sr.cls}">${sr.t}</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+                <div><span style="opacity:0.8;">💨 ลมกระโชกสูงสุด</span><br><span style="font-size:1.3rem; font-weight:700;">${maxW.toFixed(0)} กม./ชม.</span></div>
+                <div><span style="opacity:0.8;">🌬️ ความเร็วลมสูงสุด</span><br><span style="font-size:1.3rem; font-weight:700;">${maxWS.toFixed(0)} กม./ชม.</span></div>
+                <div><span style="opacity:0.8;">🌧️ โอกาสฝน (สูงสุด 3 วัน)</span><br><span style="font-size:1.3rem; font-weight:700;" class="v-info">${maxRP}%</span></div>
+            </div>
+            <div class="mini-links"><a href="https://www.tmd.go.th/warning.php" target="_blank">⚠️ ประกาศเตือนภัยกรมอุตุฯ</a></div>`;
+    }catch(e){
+        el.innerHTML='<div class="big-label">ไม่สามารถโหลดข้อมูลได้</div><div class="mini-links"><a href="https://www.tmd.go.th/warning.php" target="_blank">⚠️ ดูเตือนภัย กรมอุตุฯ</a></div>';
+    }
+}
+
+// ==================== 7-DAY FORECAST ====================
+function renderForecastCard() {
+    if (!weatherData?.daily?.time) return;
+    const daily = weatherData.daily;
+    const place = currentTambon ? currentTambon+' · '+currentDistrict : currentDistrict;
+    document.getElementById('fcLocation').textContent = place;
+    const DAYS = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+    const todayMx = daily.temperature_2m_max?.[0]?.toFixed(0) || '--';
+    const todayMn = daily.temperature_2m_min?.[0]?.toFixed(0) || '--';
+    const todayWc = daily.weathercode?.[0] || 0;
+    const todayInfo = getWeatherCondition(todayWc);
+    const todayRain = daily.precipitation_probability_max?.[0] || 0;
+    let stripHtml = '';
+    for (let i = 0; i < Math.min(7, daily.time.length); i++) {
+        const d = new Date(daily.time[i]);
+        const isToday = i === 0;
+        const dayName = isToday ? 'วันนี้' : DAYS[d.getDay()];
+        const mx = daily.temperature_2m_max?.[i]?.toFixed(0) || '--';
+        const mn = daily.temperature_2m_min?.[i]?.toFixed(0) || '--';
+        const rP = daily.precipitation_probability_max?.[i] || 0;
+        const wcc = daily.weathercode?.[i] || 0;
+        const wInfo = getWeatherCondition(wcc);
+        const rC = rP > 70 ? '#ff7766' : rP > 40 ? '#ffd966' : '#7dd3e8';
+        stripHtml += `<div class="fc7-cell${isToday?' today':''}">
+            <div class="fc7-d">${dayName}</div>
+            <div class="fc7-i">${wInfo.emoji}</div>
+            <div class="fc7-temps">
+                <div class="fc7-t-max" style="color:#ffaa55;">${mx}°</div>
+                <div class="fc7-t-min">${mn}°</div>
+            </div>
+            <div class="fc7-r" style="color:${rC};">☔${rP}%</div>
+        </div>`;
+    }
+    document.getElementById('fc7Container').innerHTML = `
+        <div class="big-label">${todayInfo.emoji} วันนี้ • ${todayInfo.t} • ฝน ${todayRain}%</div>
+        <div class="big-value fc-today v-orange">${todayMx}°<span style="opacity:0.5;font-weight:700;">/${todayMn}°</span></div>
+        <div class="fc7-strip">${stripHtml}</div>
+        <div class="mini-links">
+            <a href="https://open-meteo.com/en/docs?latitude=${centerLat}&longitude=${centerLon}&forecast_days=7&timezone=Asia%2FBangkok" target="_blank">📊 ข้อมูลดิบ</a>
+            <a href="https://www.windy.com/?${centerLat},${centerLon},7" target="_blank">🌍 Windy 7d</a>
+            <a href="https://www.tmd.go.th/forecast/sevenday" target="_blank">🇹🇭 TMD 7d</a>
+        </div>`;
+}
+
+// ==================== AQI ====================
+async function loadAQIData() {
+    const el = document.getElementById('aqiContainer');
+    function aC(v) { return v>=200?'#a76dd0':v>=150?'#ff7766':v>=100?'#ffaa55':v>=50?'#ffd966':'#6fe09a'; }
+    function aL(v) { return v>=200?'อันตราย':v>=150?'ไม่ดี':v>=100?'กลุ่มเสี่ยง':v>=50?'ปานกลาง':'ดี'; }
+    const PROVS = [
+        {n:'กทม.',t:'bangkok'},{n:'เชียงใหม่',t:'chiang-mai'},{n:'ขอนแก่น',t:'khon-kaen'},
+        {n:'โคราช',t:'nakhon-ratchasima'},{n:'สงขลา',t:'songkhla'},{n:'อยุธยา',t:'ayutthaya'}
+    ];
+    try {
+        const [mainR, ...pvRs] = await Promise.allSettled([
+            fetch('https://api.waqi.info/feed/geo:'+centerLat+';'+centerLon+'/?token=demo'),
+            ...PROVS.map(p => fetch('https://api.waqi.info/feed/'+p.t+'/?token=demo'))
+        ]);
+        let mainHtml = '';
+        if (mainR.status === 'fulfilled') {
+            const d = await mainR.value.json();
+            if (d.status === 'ok') {
+                const aqi = d.data?.aqi;
+                const pm25 = d.data?.iaqi?.pm25?.v;
+                const pm10 = d.data?.iaqi?.pm10?.v;
+                const stn = (d.data?.city?.name || currentDistrict).split(',')[0];
+                const c1 = aC(aqi);
+                mainHtml = `
+                    <div class="aqi-main-section">
+                        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.88);margin-bottom:1px;line-height:1.2;">📍 ${stn} • ${aL(aqi)}</div>
+                        <div style="display:flex;align-items:center;gap:14px;flex-wrap:nowrap;min-width:0;">
+                            <div style="font-family:'Inter','Sarabun',sans-serif;font-size:var(--size-big);font-weight:800;line-height:1;color:${c1};flex-shrink:0;">${aqi}<span style="font-size:0.4em;font-weight:600;opacity:0.72;margin-left:5px;">AQI</span></div>
+                            <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;">
+                                <div style="font-family:'Inter',sans-serif;font-size:calc(var(--size-stat) * 0.78);font-weight:800;color:#ffaa55;line-height:1.2;">${pm25||'--'}<span style="font-size:0.78em;opacity:0.7;margin-left:4px;font-weight:500;">PM2.5</span></div>
+                                <div style="font-family:'Inter',sans-serif;font-size:calc(var(--size-stat) * 0.78);font-weight:800;color:#ffd966;line-height:1.2;">${pm10||'--'}<span style="font-size:0.78em;opacity:0.7;margin-left:4px;font-weight:500;">PM10</span></div>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+        }
+        const pvVals = await Promise.all(pvRs.map(async r => {
+            if (r.status !== 'fulfilled') return null;
+            try { const d = await r.value.json(); return d.status === 'ok' ? d.data?.aqi : null; }
+            catch(e) { return null; }
+        }));
+        let pvHtml = '<div class="aqi-prov-grid">';
+        PROVS.forEach((p,i) => {
+            const aqi = pvVals[i];
+            const c2 = aqi != null ? aC(aqi) : '#7aaa90';
+            const lbl2 = aqi != null ? aL(aqi) : '';
+            const val = aqi != null ? aqi : '--';
+            pvHtml += `<div style="background:rgba(0,0,0,0.38);border:1px solid rgba(255,255,255,0.14);border-radius:8px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;">
+                <div style="font-size:11px;color:#fff;font-weight:700;line-height:1.5;text-align:center;">${p.n}</div>
+                <div style="font-family:'Inter',sans-serif;font-size:var(--size-stat);font-weight:800;line-height:1.1;color:${c2};">${val}</div>
+                <div style="font-size:9px;color:${c2};line-height:1.3;text-align:center;">${lbl2}</div>
+            </div>`;
+        });
+        pvHtml += '</div>';
+        el.innerHTML = mainHtml + pvHtml + `<div class="mini-links">
+            <a href="https://aqicn.org/map/thailand/" target="_blank">🗺️ AQI Map</a>
+            <a href="https://pm25.gistda.or.th/" target="_blank">🛰️ GISTDA</a>
+            <a href="https://air4thai.com/webV3/" target="_blank">🌿 Air4Thai</a>
+        </div>`;
+    } catch(e) {
+        el.innerHTML = '<div class="big-label">ไม่สามารถโหลดข้อมูลได้</div><div class="mini-links"><a href="https://aqicn.org/map/thailand/" target="_blank">🗺️ ดูข้อมูล AQI</a></div>';
+    }
+}
+
+// ==================== TRAFFIC ====================
+async function loadTrafficData() {
+    const el = document.getElementById('trafficContainer');
+    const place = currentTambon ? currentTambon+' · '+currentDistrict : currentDistrict;
+    document.getElementById('trafficLocation').textContent = place;
+    const h = new Date().getHours(), day = new Date().getDay();
+    const isPeak = (h>=7&&h<=9)||(h>=16&&h<=20), isWE = day===0||day===6;
+    const lvl = isPeak&&!isWE ? {t:'หนาแน่น',cls:'v-bad',sp:'15-25'} : isPeak ? {t:'ปานกลาง',cls:'v-warn',sp:'25-35'} : {t:'ปกติ',cls:'v-good',sp:'40-60'};
+    const timeStr = new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    const gMapUrl = 'https://www.google.com/maps/@'+centerLat+','+centerLon+',13z/data=!5m1!1e1';
+    const ldoUrl = 'https://traffic.longdo.com/search?lat='+centerLat+'&lon='+centerLon;
+    const ldoRSSUrl = 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fapi.longdo.com%2Fmap%2Frss%2Fincident%3Fkey%3Dpublic%26lat%3D'+centerLat+'%26lon%3D'+centerLon+'%26dist%3D20000&count=4';
+    let accidentCount = 0;
+    try {
+        const r = await fetch(ldoRSSUrl);
+        if (r.ok) { const d = await r.json(); accidentCount = (d.items||[]).length; }
+    } catch(e) {}
+    el.innerHTML = `
+        <div class="big-label">📍 ${place} • ${timeStr}</div>
+        <div class="big-value big-value-thai ${lvl.cls}">${lvl.t}</div>
+        <div class="stat-row">
+            <div class="stat"><div class="stat-num">~${lvl.sp}</div><div class="stat-lbl">⚡ กม./ชม. เฉลี่ย</div></div>
+            <div class="stat"><div class="stat-num ${accidentCount>0?'v-bad':'v-good'}">${accidentCount}</div><div class="stat-lbl">🚨 เหตุการณ์ใกล้พื้นที่</div></div>
+        </div>
+        <div class="mini-links">
+            <a href="${gMapUrl}" target="_blank">🗺️ Google Maps</a>
+            <a href="${ldoUrl}" target="_blank">🛣️ Longdo Traffic</a>
+        </div>`;
+}
+
+// ==================== DISASTER ====================
+async function loadDisasterData() {
+    const el = document.getElementById('disasterContainer');
+    if (!el) return;
+    const NOW = new Date();
+    const TODAY_START = new Date(NOW.getFullYear(),NOW.getMonth(),NOW.getDate()).getTime();
+    const WEEK_START = TODAY_START - 7*24*3600*1000;
+    function magColor(m){ return m>=6?'#ff5544':m>=5?'#ff7766':m>=4?'#ffaa55':'#ffd966'; }
+    function fmtDist(km){ return km<1000 ? Math.round(km)+' กม.' : (km/1000).toFixed(1)+'k กม.'; }
+    function mapUrlFor(la,lo){ return 'https://earthquake.usgs.gov/earthquakes/map/?extent='+(la-3).toFixed(2)+','+(lo-3).toFixed(2)+'&extent='+(la+3).toFixed(2)+','+(lo+3).toFixed(2); }
+    try {
+        const [eqR, gR] = await Promise.allSettled([
+            fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson'),
+            fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.gdacs.org%2Fxml%2Frss.xml&count=8')
+        ]);
+        let allQuakes = [], quakeCount24h = 0, gdacsCount = 0;
+        if (eqR.status==='fulfilled' && eqR.value.ok) {
+            const eq = await eqR.value.json();
+            const raw = (eq.features||[]).map(f => ({
+                mag: f.properties.magnitude||f.properties.mag,
+                place: f.properties.place, time: f.properties.time,
+                lat: f.geometry?.coordinates?.[1], lon: f.geometry?.coordinates?.[0],
+                depth: f.geometry?.coordinates?.[2]
+            })).filter(q => q.lat !== undefined);
+            quakeCount24h = raw.filter(q => q.time >= TODAY_START).length;
+            allQuakes = raw.filter(q => q.time >= WEEK_START)
+                .map(q => ({...q, dist: distKm(centerLat,centerLon,q.lat,q.lon)}))
+                .sort((a,b) => b.time - a.time);
+        }
+        if (gR.status==='fulfilled' && gR.value.ok) {
+            const gd = await gR.value.json();
+            gdacsCount = (gd.items||[]).filter(it => it.pubDate && new Date(it.pubDate).getTime() >= WEEK_START).length;
+        }
+        const place = currentTambon ? currentTambon+' · '+currentDistrict : currentDistrict;
+        if (allQuakes.length > 0) {
+            const latest = allQuakes[0];
+            const latestMag = parseFloat(latest.mag||0);
+            const latestColor = magColor(latestMag);
+            const latestDist = fmtDist(latest.dist);
+            const latestUrl = mapUrlFor(latest.lat, latest.lon);
+            const latestDepth = latest.depth ? latest.depth.toFixed(0) : '--';
+            const others = allQuakes.slice(1, 4);
+            let listHtml = '';
+            others.forEach(q => {
+                const m = parseFloat(q.mag||0);
+                const c = magColor(m);
+                listHtml += `<a class="eq-row" href="${mapUrlFor(q.lat,q.lon)}" target="_blank">
+                    <span class="eq-row-mag" style="background:${c};">M ${m.toFixed(1)}</span>
+                    <span class="eq-row-place">${q.place||'ไม่ระบุ'}</span>
+                    <span class="eq-row-meta">
+                        <span class="eq-row-dist">${fmtDist(q.dist)}</span>
+                        <span class="eq-row-time">${fmtTimeAgo(q.time)}</span>
+                    </span>
+                </a>`;
+            });
+            el.innerHTML = `
+                <div class="big-label">🌍 USGS • ${quakeCount24h} ครั้งวันนี้ • ${gdacsCount>0?'GDACS '+gdacsCount+' • ':''}ใกล้ ${place}</div>
+                <a class="eq-featured" href="${latestUrl}" target="_blank">
+                    <div style="display:flex;align-items:flex-start;gap:12px;">
+                        <div class="big-value" style="color:${latestColor};margin:0;flex-shrink:0;">M ${latestMag.toFixed(1)}</div>
+                        <div style="flex:1;min-width:0;">
+                            <div class="big-sub" style="font-weight:700;font-size:13px;color:#fff;opacity:1;line-height:1.3;">${latest.place||'ไม่ระบุ'}</div>
+                            <div class="eq-featured-meta"><span>🕐 ${fmtDateThai(latest.time)} (${fmtTimeAgo(latest.time)})</span></div>
+                            <div class="eq-featured-meta">
+                                <span class="eq-dist">📏 ${latestDist} จาก ${place}</span>
+                                <span class="eq-depth">ลึก ${latestDepth} กม.</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <div class="eq-list">${listHtml}</div>
+                <div class="mini-links">
+                    <a href="https://earthquake.usgs.gov/earthquakes/map/?extent=0,95&extent=25,115" target="_blank">🌍 USGS</a>
+                    <a href="https://www.gdacs.org/Alerts/default.aspx" target="_blank">🆘 GDACS</a>
+                </div>`;
+        } else {
+            el.innerHTML = `
+                <div class="big-label">📍 บริเวณ ${place}</div>
+                <div class="big-value big-value-thai v-good">ปกติ</div>
+                <div class="big-sub">ไม่พบรายงานแผ่นดินไหวสำคัญใน 7 วันล่าสุด</div>
+                <div class="mini-links">
+                    <a href="https://earthquake.usgs.gov/earthquakes/map/?extent=0,95&extent=25,115" target="_blank">🌍 USGS</a>
+                    <a href="https://www.gdacs.org/Alerts/default.aspx" target="_blank">🆘 GDACS</a>
+                </div>`;
+        }
+    } catch(e) {
+        el.innerHTML = '<div class="big-label">⚠️ โหลดข้อมูลไม่ได้</div><div class="mini-links"><a href="https://earthquake.usgs.gov/earthquakes/map/" target="_blank">🌍 USGS</a><a href="https://www.gdacs.org" target="_blank">🆘 GDACS</a></div>';
+    }
+}
+
+// ==================== FONT SIZES ====================
+function applyBigSize(v) {
+    document.body.classList.remove('big-xxs','big-sm','big-md','big-lg','big-xl');
+    if (v !== 'md') document.body.classList.add('big-' + v);
+    localStorage.setItem('dashBigSize', v);
+    if (weatherData) { renderWeatherCard(); renderForecastCard(); }
+}
+function applyStatSize(v) {
+    document.body.classList.remove('stat-sm','stat-md','stat-lg','stat-xl','stat-xxl');
+    if (v !== 'md') document.body.classList.add('stat-' + v);
+    localStorage.setItem('dashStatSize', v);
+    if (weatherData) { renderWeatherCard(); renderForecastCard(); loadAQIData(); loadStormData(); loadTrafficData(); loadDisasterData(); }
+}
+function changeBigSize() { applyBigSize(document.getElementById('sizeBigSel').value); }
+function changeStatSize() { applyStatSize(document.getElementById('sizeStatSel').value); }
+function restoreFontSizes() {
+    let bv = localStorage.getItem('dashBigSize') || 'md';
+    let sv = localStorage.getItem('dashStatSize') || 'md';
+    document.getElementById('sizeBigSel').value = bv;
+    document.getElementById('sizeStatSel').value = sv;
+    applyBigSize(bv); applyStatSize(sv);
+}
+
+// ==================== DROPDOWN LOGIC ====================
+function populateProvinces() {
+    const sel = document.getElementById('provinceSelect');
+    sel.innerHTML = '';
+    Object.keys(thaiGeo).sort((a,b)=>a.localeCompare(b,'th')).forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p; opt.textContent = p;
+        if (p === currentProvince) opt.selected = true;
+        sel.appendChild(opt);
+    });
+}
+function populateDistricts(province) {
+    const sel = document.getElementById('districtSelect');
+    sel.innerHTML = '';
+    const dists = thaiGeo[province]?.districts || [];
+    dists.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.name; opt.textContent = d.name;
+        if (d.name === currentDistrict) opt.selected = true;
+        sel.appendChild(opt);
+    });
+    if (!dists.find(d => d.name === currentDistrict) && dists.length > 0) {
+        currentDistrict = dists[0].name;
+        sel.value = currentDistrict;
+    }
+}
+function populateTambons(province, districtName) {
+    const sel = document.getElementById('tambonSelect');
+    sel.innerHTML = '';
+    const dist = thaiGeo[province]?.districts?.find(d => d.name === districtName);
+    const tambons = dist?.tambons || [];
+    if (tambons.length === 0) {
+        sel.innerHTML = '<option value="" disabled selected>— ไม่มีข้อมูลตำบล —</option>';
+        currentTambon = '';
+        return;
+    }
+    tambons.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.name; opt.textContent = t.name;
+        if (t.name === currentTambon) opt.selected = true;
+        sel.appendChild(opt);
+    });
+    if (!tambons.find(t => t.name === currentTambon)) {
+        currentTambon = tambons[0].name;
+        sel.value = currentTambon;
+    }
+}
+
+function onProvinceChange() {
+    currentProvince = document.getElementById('provinceSelect').value;
+    const dists = thaiGeo[currentProvince]?.districts || [];
+    currentDistrict = dists[0]?.name || '';
+    currentTambon = dists[0]?.tambons?.[0]?.name || '';
+    populateDistricts(currentProvince);
+    populateTambons(currentProvince, currentDistrict);
+    updateLocationFromSelection();
+}
+function onDistrictChange() {
+    currentDistrict = document.getElementById('districtSelect').value;
+    const dist = thaiGeo[currentProvince]?.districts?.find(d => d.name === currentDistrict);
+    currentTambon = dist?.tambons?.[0]?.name || '';
+    populateTambons(currentProvince, currentDistrict);
+    updateLocationFromSelection();
+}
+function onTambonChange() {
+    currentTambon = document.getElementById('tambonSelect').value;
+    updateLocationFromSelection();
+}
+function updateLocationFromSelection() {
+    const dist = thaiGeo[currentProvince]?.districts?.find(d => d.name === currentDistrict);
+    const tamb = dist?.tambons?.find(t => t.name === currentTambon);
+    if (tamb && !isNaN(tamb.lat)) { centerLat = tamb.lat; centerLon = tamb.lon; }
+    else if (dist && !isNaN(dist.lat) && dist.lat !== 0) { centerLat = dist.lat; centerLon = dist.lon; }
+    else { const c = thaiGeo[currentProvince]?.center; if (c) { centerLat = c[0]; centerLon = c[1]; } }
+    setLocationInfo();
+    initAll();
+}
+function setLocationInfo() {
+    const place = currentTambon ? currentTambon+' · '+currentDistrict : currentDistrict;
+    document.getElementById('fcLocation').textContent = place;
+    document.getElementById('stormLocation').textContent = place;
+    document.getElementById('trafficLocation').textContent = place;
+    document.getElementById('coordDisplay').textContent = `${centerLat.toFixed(3)}°N ${centerLon.toFixed(3)}°E — ${place}`;
+}
+function updateLastUpdateTime() { document.getElementById('wdLastUpdate').textContent = 'อัปเดต: '+new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+
+async function initAll() {
+    setLocationInfo();
+    try {
+        await fetchWeatherData(centerLat, centerLon);
+        renderWeatherCard();
+        renderForecastCard();
+        updateLastUpdateTime();
+        showNotification('✅ โหลดข้อมูล '+currentDistrict+' สำเร็จ');
+    } catch(e) {
+        document.getElementById('weatherBody').innerHTML='<div class="loading">❌ ไม่สามารถเชื่อมต่อ API (กรุณาเปิดผ่าน Live Server)</div>';
+        document.getElementById('fc7Container').innerHTML='<div class="loading">❌ รอการเชื่อมต่อ</div>';
+    }
+    loadAQIData().catch(()=>{});
+    loadStormData().catch(()=>{});
+    loadTrafficData().catch(()=>{});
+    loadDisasterData().catch(()=>{});
+    updateLastUpdateTime();
+}
+
+// ==================== STARTUP ====================
+document.addEventListener('DOMContentLoaded', async function() {
+    restoreFontSizes();
+    document.getElementById('sizeBigSel').addEventListener('change', changeBigSize);
+    document.getElementById('sizeStatSel').addEventListener('change', changeStatSize);
+
+    populateProvinces();
+    populateDistricts(currentProvince);
+    populateTambons(currentProvince, currentDistrict);
+
+    document.getElementById('provinceSelect').addEventListener('change', onProvinceChange);
+    document.getElementById('districtSelect').addEventListener('change', onDistrictChange);
+    document.getElementById('tambonSelect').addEventListener('change', onTambonChange);
+
+    initAll();
+
+    const geoLoaded = await loadThaiGeoFromCDN();
+    if (geoLoaded) {
+        const provData = thaiGeo[currentProvince];
+        if (provData) {
+            const exact = provData.districts.find(d => d.name === currentDistrict);
+            if (!exact) {
+                const stripped = currentDistrict.replace(/^(เขต|อำเภอ|เมือง)/, '').trim();
+                const fuzzy = provData.districts.find(d => d.name === stripped || d.name.includes(stripped) || stripped.includes(d.name));
+                if (fuzzy) {
+                    currentDistrict = fuzzy.name;
+                    currentTambon = fuzzy.tambons?.[0]?.name || '';
+                } else {
+                    currentDistrict = provData.districts[0].name;
+                    currentTambon = provData.districts[0].tambons?.[0]?.name || '';
+                }
+            }
+        }
+        populateProvinces();
+        populateDistricts(currentProvince);
+        populateTambons(currentProvince, currentDistrict);
+        updateLocationFromSelection();
+        showNotification('✅ อัปเดตข้อมูลอำเภอ-ตำบลครบ '+Object.keys(thaiGeo).length+' จังหวัด');
+    } else {
+        showNotification('⚠️ ใช้ข้อมูลพื้นฐาน (CDN ไม่ตอบ)');
+    }
+
+    setInterval(async()=>{ try{ await fetchWeatherData(centerLat,centerLon); renderWeatherCard(); renderForecastCard(); updateLastUpdateTime(); }catch(e){} }, 600000);
+    setInterval(()=>{ loadAQIData().catch(()=>{}); loadStormData().catch(()=>{}); loadTrafficData().catch(()=>{}); loadDisasterData().catch(()=>{}); updateLastUpdateTime(); }, 600000);
+});
+</script>
+</body>
+</html>
